@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use RyberID, please cite the project using the metadata in this file."
+title: "RyberID"
+type: software
+authors:
+  - family-names: "Ccallo Chambi"
+    given-names: "Mark Will"
+repository-code: "https://github.com/RyberMain/ryber-id"
+license: "Apache-2.0"
