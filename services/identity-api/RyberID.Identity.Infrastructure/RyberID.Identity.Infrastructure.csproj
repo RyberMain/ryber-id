@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\RyberID.Identity.Application\RyberID.Identity.Application.csproj" />
+    <ProjectReference Include="..\RyberID.Identity.Domain\RyberID.Identity.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
