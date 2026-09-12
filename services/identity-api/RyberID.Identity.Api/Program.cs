@@ -1,3 +1,4 @@
+using RyberID.Identity.Application.Users;
 using RyberID.Identity.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 
+builder.Services.AddScoped<CreateUser>();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
