@@ -1,3 +1,4 @@
+﻿using RyberID.Identity.Application.Passkeys;
 using RyberID.Identity.Application.Users;
 using RyberID.Identity.Infrastructure;
 
@@ -7,6 +8,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 
 builder.Services.AddScoped<CreateUser>();
+builder.Services.AddScoped<BeginPasskeyRegistration>();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
@@ -20,3 +22,4 @@ if (app.Environment.IsDevelopment())
 }
 
 app.Run();
+

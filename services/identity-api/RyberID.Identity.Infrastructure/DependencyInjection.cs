@@ -1,9 +1,13 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RyberID.Identity.Application.Users;
 using RyberID.Identity.Infrastructure.Persistence;
 using RyberID.Identity.Infrastructure.Persistence.Users;
+using RyberID.Identity.Application.Passkeys;
+using RyberID.Identity.Infrastructure.Persistence.Passkeys;
+
+using RyberID.Identity.Infrastructure.Passkeys;
 
 namespace RyberID.Identity.Infrastructure;
 
@@ -24,7 +28,15 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString));
 
         services.AddScoped<IUserStore, UserStore>();
+        services.AddScoped<IPasskeyCredentialStore, PasskeyCredentialStore>();
+        services.AddScoped<IPasskeyUserHandleStore, PasskeyUserHandleStore>();
+        services.AddScoped<
+            IPasskeyRegistrationOptionsFactory,
+            Fido2PasskeyRegistrationOptionsFactory>();
+
+        services.AddPasskeyFido2(configuration);
 
         return services;
     }
 }
+
