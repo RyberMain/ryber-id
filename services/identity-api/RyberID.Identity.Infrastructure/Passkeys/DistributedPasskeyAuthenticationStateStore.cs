@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
+﻿using System.Collections.Concurrent;
+using Microsoft.Extensions.Caching.Distributed;
 using RyberID.Identity.Application.Passkeys;
 
 namespace RyberID.Identity.Infrastructure.Passkeys;
@@ -7,6 +8,9 @@ internal sealed class DistributedPasskeyAuthenticationStateStore(
     IDistributedCache cache)
     : IPasskeyAuthenticationStateStore
 {
+    private static readonly ConcurrentDictionary<Guid, SemaphoreSlim>
+        CeremonyLocks = new();
+
     public Task SaveAsync(
         Guid ceremonyId,
         string optionsJson,
@@ -26,22 +30,45 @@ internal sealed class DistributedPasskeyAuthenticationStateStore(
             cancellationToken);
     }
 
-    public Task<string?> GetAsync(
+    public async Task<string?> ConsumeAsync(
         Guid ceremonyId,
         CancellationToken cancellationToken)
     {
-        return cache.GetStringAsync(
-            GetKey(ceremonyId),
-            cancellationToken);
-    }
+        var semaphore =
+            CeremonyLocks.GetOrAdd(
+                ceremonyId,
+                static _ => new SemaphoreSlim(1, 1));
 
-    public Task RemoveAsync(
-        Guid ceremonyId,
-        CancellationToken cancellationToken)
-    {
-        return cache.RemoveAsync(
-            GetKey(ceremonyId),
-            cancellationToken);
+        await semaphore.WaitAsync(cancellationToken);
+
+        try
+        {
+            var key = GetKey(ceremonyId);
+
+            var value =
+                await cache.GetStringAsync(
+                    key,
+                    cancellationToken);
+
+            if (value is null)
+            {
+                return null;
+            }
+
+            await cache.RemoveAsync(
+                key,
+                cancellationToken);
+
+            return value;
+        }
+        finally
+        {
+            semaphore.Release();
+
+            CeremonyLocks.TryRemove(
+                ceremonyId,
+                out _);
+        }
     }
 
     private static string GetKey(Guid ceremonyId)

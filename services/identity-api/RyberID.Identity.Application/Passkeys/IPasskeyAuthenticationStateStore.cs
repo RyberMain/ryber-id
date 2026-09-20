@@ -8,11 +8,7 @@ public interface IPasskeyAuthenticationStateStore
         TimeSpan lifetime,
         CancellationToken cancellationToken);
 
-    Task<string?> GetAsync(
-        Guid ceremonyId,
-        CancellationToken cancellationToken);
-
-    Task RemoveAsync(
+    Task<string?> ConsumeAsync(
         Guid ceremonyId,
         CancellationToken cancellationToken);
 }

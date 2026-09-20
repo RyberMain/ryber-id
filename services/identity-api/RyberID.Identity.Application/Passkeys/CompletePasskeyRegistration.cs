@@ -15,11 +15,11 @@ public sealed class CompletePasskeyRegistration(
         CancellationToken cancellationToken = default)
     {
         var optionsJson =
-            await stateStore.GetAsync(
+            await stateStore.ConsumeAsync(
                 ceremonyId,
                 cancellationToken)
             ?? throw new InvalidOperationException(
-                "Passkey registration ceremony was not found or has expired.");
+                "Passkey registration ceremony was not found, has expired, or was already consumed.");
 
         var userHandle =
             await userHandleStore.GetByUserIdAsync(
@@ -50,10 +50,6 @@ public sealed class CompletePasskeyRegistration(
 
         await credentialStore.AddAsync(
             credential,
-            cancellationToken);
-
-        await stateStore.RemoveAsync(
-            ceremonyId,
             cancellationToken);
 
         return credential.Id;
