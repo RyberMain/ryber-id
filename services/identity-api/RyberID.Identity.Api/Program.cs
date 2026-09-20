@@ -1,4 +1,5 @@
-﻿using RyberID.Identity.Application.Passkeys;
+﻿using RyberID.Identity.Application.Sessions;
+using RyberID.Identity.Application.Passkeys;
 using RyberID.Identity.Application.Users;
 using RyberID.Identity.Infrastructure;
 
@@ -12,6 +13,9 @@ builder.Services.AddScoped<BeginPasskeyRegistration>();
 builder.Services.AddScoped<CompletePasskeyRegistration>();
 builder.Services.AddScoped<BeginPasskeyAuthentication>();
 builder.Services.AddScoped<CompletePasskeyAuthentication>();
+builder.Services.AddScoped<CreateSession>();
+builder.Services.AddScoped<GetSessionState>();
+builder.Services.AddScoped<RevokeSession>();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
@@ -25,6 +29,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.Run();
+
 
 
 
