@@ -4,14 +4,23 @@ using RyberID.Identity.Domain.Sessions;
 namespace RyberID.Identity.Application.Sessions;
 
 public sealed class CreateSession(
-    ISessionStore sessionStore)
+    ISessionStore sessionStore,
+    ISessionLifetimePolicy lifetimePolicy,
+    TimeProvider timeProvider)
 {
     public async Task<SessionState> ExecuteAsync(
         AuthenticatedIdentity identity,
-        DateTimeOffset createdAtUtc,
-        DateTimeOffset expiresAtUtc,
         CancellationToken cancellationToken = default)
     {
+        var createdAtUtc =
+            timeProvider.GetUtcNow();
+
+        var lifetime =
+            lifetimePolicy.GetLifetime();
+
+        var expiresAtUtc =
+            createdAtUtc.Add(lifetime);
+
         var session =
             Session.Create(
                 identity.UserId,

@@ -1,11 +1,11 @@
 ﻿namespace RyberID.Identity.Application.Sessions;
 
 public sealed class RevokeCurrentSession(
-    ISessionStore sessionStore)
+    ISessionStore sessionStore,
+    TimeProvider timeProvider)
 {
     public async Task ExecuteAsync(
         SessionIdentity identity,
-        DateTimeOffset revokedAtUtc,
         CancellationToken cancellationToken = default)
     {
         var session =
@@ -20,6 +20,9 @@ public sealed class RevokeCurrentSession(
             throw new InvalidOperationException(
                 "Session does not belong to the authenticated user.");
         }
+
+        var revokedAtUtc =
+            timeProvider.GetUtcNow();
 
         session.Revoke(
             revokedAtUtc);

@@ -3,12 +3,12 @@
 namespace RyberID.Identity.Application.Sessions;
 
 public sealed class GetSessionState(
-    ISessionStore sessionStore)
+    ISessionStore sessionStore,
+    TimeProvider timeProvider)
 {
     public async Task<SessionState> ExecuteAsync(
         AuthenticatedIdentity identity,
         Guid sessionId,
-        DateTimeOffset nowUtc,
         CancellationToken cancellationToken = default)
     {
         var session =
@@ -23,6 +23,9 @@ public sealed class GetSessionState(
             throw new InvalidOperationException(
                 "Session does not belong to the authenticated user.");
         }
+
+        var nowUtc =
+            timeProvider.GetUtcNow();
 
         return new SessionState(
             session.Id,

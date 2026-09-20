@@ -3,12 +3,12 @@
 namespace RyberID.Identity.Application.Sessions;
 
 public sealed class RevokeSession(
-    ISessionStore sessionStore)
+    ISessionStore sessionStore,
+    TimeProvider timeProvider)
 {
     public async Task<SessionState> ExecuteAsync(
         AuthenticatedIdentity identity,
         Guid sessionId,
-        DateTimeOffset revokedAtUtc,
         CancellationToken cancellationToken = default)
     {
         var session =
@@ -23,6 +23,9 @@ public sealed class RevokeSession(
             throw new InvalidOperationException(
                 "Session does not belong to the authenticated user.");
         }
+
+        var revokedAtUtc =
+            timeProvider.GetUtcNow();
 
         session.Revoke(
             revokedAtUtc);

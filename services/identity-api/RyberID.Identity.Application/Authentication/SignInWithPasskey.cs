@@ -10,8 +10,6 @@ public sealed class SignInWithPasskey(
     public async Task<SignInResult> ExecuteAsync(
         Guid ceremonyId,
         string assertionResponseJson,
-        DateTimeOffset createdAtUtc,
-        DateTimeOffset expiresAtUtc,
         CancellationToken cancellationToken = default)
     {
         var identity =
@@ -23,8 +21,6 @@ public sealed class SignInWithPasskey(
         var session =
             await createSession.ExecuteAsync(
                 identity,
-                createdAtUtc,
-                expiresAtUtc,
                 cancellationToken);
 
         return new SignInResult(

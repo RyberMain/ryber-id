@@ -1,11 +1,11 @@
 ﻿namespace RyberID.Identity.Application.Sessions;
 
 public sealed class ResolveActiveSession(
-    ISessionStore sessionStore)
+    ISessionStore sessionStore,
+    TimeProvider timeProvider)
 {
     public async Task<SessionIdentity?> ExecuteAsync(
         Guid sessionId,
-        DateTimeOffset nowUtc,
         CancellationToken cancellationToken = default)
     {
         var session =
@@ -17,6 +17,9 @@ public sealed class ResolveActiveSession(
         {
             return null;
         }
+
+        var nowUtc =
+            timeProvider.GetUtcNow();
 
         if (!session.IsActive(nowUtc))
         {

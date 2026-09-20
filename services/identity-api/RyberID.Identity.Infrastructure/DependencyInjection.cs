@@ -1,4 +1,5 @@
-﻿using RyberID.Identity.Infrastructure.Persistence.Sessions;
+﻿using RyberID.Identity.Infrastructure.Sessions;
+using RyberID.Identity.Infrastructure.Persistence.Sessions;
 using RyberID.Identity.Application.Sessions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -26,6 +27,13 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException(
                 $"Connection string '{ConnectionStringName}' was not configured.");
 
+        services.AddSingleton<TimeProvider>(
+            TimeProvider.System);
+
+        services.AddSingleton<ISessionLifetimePolicy>(
+            serviceProvider =>
+                new ConfigurationSessionLifetimePolicy(
+                    serviceProvider.GetRequiredService<IConfiguration>()));
         services.AddDbContext<IdentityDbContext>(options =>
             options.UseNpgsql(connectionString));
 
@@ -64,6 +72,7 @@ public static class DependencyInjection
         return services;
     }
 }
+
 
 
 
