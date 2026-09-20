@@ -23,10 +23,14 @@ internal sealed class PasskeyCredentialConfiguration
 
         builder.Property(passkey => passkey.CredentialId)
             .HasColumnName("credential_id")
+            .HasField("_credentialId")
+            .UsePropertyAccessMode(PropertyAccessMode.Field)
             .IsRequired();
 
         builder.Property(passkey => passkey.PublicKey)
             .HasColumnName("public_key")
+            .HasField("_publicKey")
+            .UsePropertyAccessMode(PropertyAccessMode.Field)
             .IsRequired();
 
         builder.Property(passkey => passkey.SignCount)

@@ -2,5 +2,6 @@
 
 public sealed record VerifiedPasskeyAuthentication(
     Guid UserId,
-    byte[] CredentialId,
+    Guid CredentialRecordId,
+    uint StoredSignCount,
     uint SignCount);

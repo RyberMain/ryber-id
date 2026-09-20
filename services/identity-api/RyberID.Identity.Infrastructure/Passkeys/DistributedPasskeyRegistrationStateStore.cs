@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.Extensions.Caching.Distributed;
 using RyberID.Identity.Application.Passkeys;
 
 namespace RyberID.Identity.Infrastructure.Passkeys;
@@ -8,8 +7,8 @@ internal sealed class DistributedPasskeyRegistrationStateStore(
     IDistributedCache cache)
     : IPasskeyRegistrationStateStore
 {
-    private static readonly ConcurrentDictionary<Guid, SemaphoreSlim>
-        CeremonyLocks = new();
+    private static readonly SemaphoreSlim ConsumptionLock =
+        new(1, 1);
 
     public Task SaveAsync(
         Guid ceremonyId,
@@ -34,12 +33,7 @@ internal sealed class DistributedPasskeyRegistrationStateStore(
         Guid ceremonyId,
         CancellationToken cancellationToken)
     {
-        var semaphore =
-            CeremonyLocks.GetOrAdd(
-                ceremonyId,
-                static _ => new SemaphoreSlim(1, 1));
-
-        await semaphore.WaitAsync(cancellationToken);
+        await ConsumptionLock.WaitAsync(cancellationToken);
 
         try
         {
@@ -63,11 +57,7 @@ internal sealed class DistributedPasskeyRegistrationStateStore(
         }
         finally
         {
-            semaphore.Release();
-
-            CeremonyLocks.TryRemove(
-                ceremonyId,
-                out _);
+            ConsumptionLock.Release();
         }
     }
 

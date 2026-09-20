@@ -2,15 +2,25 @@
 
 public sealed class ResolveActiveSession(
     ISessionStore sessionStore,
+    ISessionTokenService sessionTokenService,
     TimeProvider timeProvider)
 {
     public async Task<SessionIdentity?> ExecuteAsync(
-        Guid sessionId,
+        string sessionToken,
         CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(sessionToken))
+        {
+            return null;
+        }
+
+        var tokenHash =
+            sessionTokenService.Hash(
+                sessionToken);
+
         var session =
-            await sessionStore.GetByIdAsync(
-                sessionId,
+            await sessionStore.GetByTokenHashAsync(
+                tokenHash,
                 cancellationToken);
 
         if (session is null)

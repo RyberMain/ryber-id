@@ -50,12 +50,25 @@ internal sealed class PasskeyCredentialStore(
                 cancellationToken);
     }
 
-    public async Task UpdateAsync(
-        PasskeyCredential credential,
+    public async Task<bool> TryUpdateSignCountAsync(
+        Guid credentialRecordId,
+        uint expectedSignCount,
+        uint newSignCount,
         CancellationToken cancellationToken)
     {
-        dbContext.PasskeyCredentials.Update(credential);
+        var updatedRows =
+            await dbContext.PasskeyCredentials
+                .Where(
+                    credential =>
+                        credential.Id == credentialRecordId &&
+                        credential.SignCount == expectedSignCount)
+                .ExecuteUpdateAsync(
+                    setters =>
+                        setters.SetProperty(
+                            credential => credential.SignCount,
+                            newSignCount),
+                    cancellationToken);
 
-        await dbContext.SaveChangesAsync(cancellationToken);
+        return updatedRows == 1;
     }
 }

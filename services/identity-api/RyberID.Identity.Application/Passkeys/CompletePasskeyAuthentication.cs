@@ -1,4 +1,5 @@
 ﻿using RyberID.Identity.Application.Authentication;
+using RyberID.Identity.Domain.Passkeys;
 
 namespace RyberID.Identity.Application.Passkeys;
 
@@ -25,25 +26,26 @@ public sealed class CompletePasskeyAuthentication(
                 assertionResponseJson,
                 cancellationToken);
 
-        var credential =
-            await credentialStore.GetByCredentialIdAsync(
-                verified.CredentialId,
-                cancellationToken)
-            ?? throw new InvalidOperationException(
-                "Passkey credential was not found.");
-
-        if (credential.UserId != verified.UserId)
+        if (!PasskeyCredential.IsValidSignCountTransition(
+                verified.StoredSignCount,
+                verified.SignCount))
         {
             throw new InvalidOperationException(
-                "Passkey credential does not belong to the verified user.");
+                "Passkey signature counter did not advance.");
         }
 
-        credential.UpdateSignCount(
-            verified.SignCount);
+        var signCountWasUpdated =
+            await credentialStore.TryUpdateSignCountAsync(
+                verified.CredentialRecordId,
+                verified.StoredSignCount,
+                verified.SignCount,
+                cancellationToken);
 
-        await credentialStore.UpdateAsync(
-            credential,
-            cancellationToken);
+        if (!signCountWasUpdated)
+        {
+            throw new InvalidOperationException(
+                "Passkey credential changed during authentication.");
+        }
 
         return new AuthenticatedIdentity(
             verified.UserId);

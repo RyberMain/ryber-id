@@ -5,10 +5,11 @@ namespace RyberID.Identity.Application.Sessions;
 
 public sealed class CreateSession(
     ISessionStore sessionStore,
+    ISessionTokenService sessionTokenService,
     ISessionLifetimePolicy lifetimePolicy,
     TimeProvider timeProvider)
 {
-    public async Task<SessionState> ExecuteAsync(
+    public async Task<CreatedSession> ExecuteAsync(
         AuthenticatedIdentity identity,
         CancellationToken cancellationToken = default)
     {
@@ -21,9 +22,13 @@ public sealed class CreateSession(
         var expiresAtUtc =
             createdAtUtc.Add(lifetime);
 
+        var token =
+            sessionTokenService.Issue();
+
         var session =
             Session.Create(
                 identity.UserId,
+                token.Hash,
                 createdAtUtc,
                 expiresAtUtc);
 
@@ -31,12 +36,17 @@ public sealed class CreateSession(
             session,
             cancellationToken);
 
-        return new SessionState(
-            session.Id,
-            session.UserId,
-            session.CreatedAtUtc,
-            session.ExpiresAtUtc,
-            session.RevokedAtUtc,
-            session.IsActive(createdAtUtc));
+        var state =
+            new SessionState(
+                session.Id,
+                session.UserId,
+                session.CreatedAtUtc,
+                session.ExpiresAtUtc,
+                session.RevokedAtUtc,
+                session.IsActive(createdAtUtc));
+
+        return new CreatedSession(
+            state,
+            token.Value);
     }
 }

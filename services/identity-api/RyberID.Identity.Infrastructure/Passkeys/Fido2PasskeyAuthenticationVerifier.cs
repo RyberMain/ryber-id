@@ -26,6 +26,13 @@ internal sealed class Fido2PasskeyAuthenticationVerifier(
             ?? throw new InvalidOperationException(
                 "Passkey assertion response is invalid.");
 
+        if (assertionResponse.RawId is not { Length: > 0 } ||
+            assertionResponse.Response?.UserHandle is not { Length: > 0 })
+        {
+            throw new InvalidOperationException(
+                "Passkey assertion response does not identify a discoverable credential owner.");
+        }
+
         var credential =
             await credentialStore.GetByCredentialIdAsync(
                 assertionResponse.RawId,
@@ -72,7 +79,8 @@ internal sealed class Fido2PasskeyAuthenticationVerifier(
 
         return new VerifiedPasskeyAuthentication(
             credential.UserId,
-            result.CredentialId,
+            credential.Id,
+            credential.SignCount,
             result.SignCount);
     }
 }

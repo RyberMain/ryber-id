@@ -2,6 +2,9 @@ namespace RyberID.Identity.Domain.Passkeys;
 
 public sealed class PasskeyCredential
 {
+    private byte[] _credentialId = [];
+    private byte[] _publicKey = [];
+
     private PasskeyCredential()
     {
     }
@@ -15,8 +18,8 @@ public sealed class PasskeyCredential
     {
         Id = id;
         UserId = userId;
-        CredentialId = credentialId;
-        PublicKey = publicKey;
+        _credentialId = credentialId.ToArray();
+        _publicKey = publicKey.ToArray();
         SignCount = signCount;
     }
 
@@ -24,9 +27,9 @@ public sealed class PasskeyCredential
 
     public Guid UserId { get; private set; }
 
-    public byte[] CredentialId { get; private set; } = [];
+    public byte[] CredentialId => _credentialId.ToArray();
 
-    public byte[] PublicKey { get; private set; } = [];
+    public byte[] PublicKey => _publicKey.ToArray();
 
     public uint SignCount { get; private set; }
 
@@ -36,6 +39,30 @@ public sealed class PasskeyCredential
         byte[] publicKey,
         uint signCount)
     {
+        if (userId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Passkey user identifier cannot be empty.",
+                nameof(userId));
+        }
+
+        ArgumentNullException.ThrowIfNull(credentialId);
+        ArgumentNullException.ThrowIfNull(publicKey);
+
+        if (credentialId.Length == 0)
+        {
+            throw new ArgumentException(
+                "Passkey credential identifier cannot be empty.",
+                nameof(credentialId));
+        }
+
+        if (publicKey.Length == 0)
+        {
+            throw new ArgumentException(
+                "Passkey public key cannot be empty.",
+                nameof(publicKey));
+        }
+
         return new PasskeyCredential(
             Guid.CreateVersion7(),
             userId,
@@ -44,8 +71,12 @@ public sealed class PasskeyCredential
             signCount);
     }
 
-    public void UpdateSignCount(uint signCount)
+    public static bool IsValidSignCountTransition(
+        uint storedSignCount,
+        uint receivedSignCount)
     {
-        SignCount = signCount;
+        return
+            storedSignCount == 0 ||
+            receivedSignCount > storedSignCount;
     }
 }

@@ -31,14 +31,17 @@ public static class DependencyInjection
             TimeProvider.System);
 
         services.AddSingleton<ISessionLifetimePolicy>(
-            serviceProvider =>
-                new ConfigurationSessionLifetimePolicy(
-                    serviceProvider.GetRequiredService<IConfiguration>()));
+            new ConfigurationSessionLifetimePolicy(
+                configuration));
         services.AddDbContext<IdentityDbContext>(options =>
             options.UseNpgsql(connectionString));
 
         services.AddScoped<IUserStore, UserStore>();
         services.AddScoped<ISessionStore, SessionStore>();
+
+        services.AddSingleton<
+            ISessionTokenService,
+            SessionTokenService>();
         services.AddScoped<IPasskeyCredentialStore, PasskeyCredentialStore>();
         services.AddScoped<IPasskeyUserHandleStore, PasskeyUserHandleStore>();
         services.AddScoped<
@@ -72,9 +75,3 @@ public static class DependencyInjection
         return services;
     }
 }
-
-
-
-
-
-

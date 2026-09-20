@@ -18,13 +18,14 @@ public sealed class SignInWithPasskey(
                 assertionResponseJson,
                 cancellationToken);
 
-        var session =
+        var createdSession =
             await createSession.ExecuteAsync(
                 identity,
                 cancellationToken);
 
         return new SignInResult(
             identity.UserId,
-            session);
+            createdSession.Session,
+            createdSession.Token);
     }
 }

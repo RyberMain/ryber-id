@@ -12,6 +12,10 @@ public interface ISessionStore
         Guid sessionId,
         CancellationToken cancellationToken);
 
+    Task<Session?> GetByTokenHashAsync(
+        byte[] tokenHash,
+        CancellationToken cancellationToken);
+
     Task UpdateAsync(
         Session session,
         CancellationToken cancellationToken);

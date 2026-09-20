@@ -20,7 +20,9 @@ public interface IPasskeyCredentialStore
         byte[] credentialId,
         CancellationToken cancellationToken);
 
-    Task UpdateAsync(
-        PasskeyCredential credential,
+    Task<bool> TryUpdateSignCountAsync(
+        Guid credentialRecordId,
+        uint expectedSignCount,
+        uint newSignCount,
         CancellationToken cancellationToken);
 }

@@ -21,6 +21,8 @@ internal sealed class PasskeyUserHandleConfiguration
 
         builder.Property(handle => handle.Value)
             .HasColumnName("value")
+            .HasField("_value")
+            .UsePropertyAccessMode(PropertyAccessMode.Field)
             .IsRequired();
 
         builder.HasIndex(handle => handle.Value)

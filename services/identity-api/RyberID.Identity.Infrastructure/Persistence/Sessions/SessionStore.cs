@@ -12,7 +12,8 @@ internal sealed class SessionStore(
         Session session,
         CancellationToken cancellationToken)
     {
-        dbContext.Sessions.Add(session);
+        dbContext.Sessions.Add(
+            session);
 
         await dbContext.SaveChangesAsync(
             cancellationToken);
@@ -25,7 +26,21 @@ internal sealed class SessionStore(
         return dbContext.Sessions
             .AsNoTracking()
             .SingleOrDefaultAsync(
-                session => session.Id == sessionId,
+                session =>
+                    session.Id == sessionId,
+                cancellationToken);
+    }
+
+    public Task<Session?> GetByTokenHashAsync(
+        byte[] tokenHash,
+        CancellationToken cancellationToken)
+    {
+        return dbContext.Sessions
+            .AsNoTracking()
+            .SingleOrDefaultAsync(
+                session =>
+                    session.TokenHash.SequenceEqual(
+                        tokenHash),
                 cancellationToken);
     }
 
@@ -33,7 +48,8 @@ internal sealed class SessionStore(
         Session session,
         CancellationToken cancellationToken)
     {
-        dbContext.Sessions.Update(session);
+        dbContext.Sessions.Update(
+            session);
 
         await dbContext.SaveChangesAsync(
             cancellationToken);
