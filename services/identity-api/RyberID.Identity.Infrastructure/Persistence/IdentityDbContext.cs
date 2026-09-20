@@ -1,5 +1,6 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using RyberID.Identity.Domain.Passkeys;
+using RyberID.Identity.Domain.Sessions;
 using RyberID.Identity.Domain.Users;
 
 namespace RyberID.Identity.Infrastructure.Persistence;
@@ -15,6 +16,9 @@ public sealed class IdentityDbContext(
 
     public DbSet<PasskeyUserHandle> PasskeyUserHandles =>
     Set<PasskeyUserHandle>();
+
+    public DbSet<Session> Sessions =>
+        Set<Session>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

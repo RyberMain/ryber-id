@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using RyberID.Identity.Infrastructure.Persistence.Sessions;
+using RyberID.Identity.Application.Sessions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RyberID.Identity.Application.Users;
@@ -28,6 +30,7 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString));
 
         services.AddScoped<IUserStore, UserStore>();
+        services.AddScoped<ISessionStore, SessionStore>();
         services.AddScoped<IPasskeyCredentialStore, PasskeyCredentialStore>();
         services.AddScoped<IPasskeyUserHandleStore, PasskeyUserHandleStore>();
         services.AddScoped<
@@ -61,6 +64,7 @@ public static class DependencyInjection
         return services;
     }
 }
+
 
 
 
