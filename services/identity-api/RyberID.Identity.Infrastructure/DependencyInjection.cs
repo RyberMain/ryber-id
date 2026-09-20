@@ -44,11 +44,24 @@ public static class DependencyInjection
             IPasskeyRegistrationVerifier,
             Fido2PasskeyRegistrationVerifier>();
 
+        services.AddScoped<
+            IPasskeyAuthenticationOptionsFactory,
+            Fido2PasskeyAuthenticationOptionsFactory>();
+
+        services.AddScoped<
+            IPasskeyAuthenticationStateStore,
+            DistributedPasskeyAuthenticationStateStore>();
+
+        services.AddScoped<
+            IPasskeyAuthenticationVerifier,
+            Fido2PasskeyAuthenticationVerifier>();
+
         services.AddPasskeyFido2(configuration);
 
         return services;
     }
 }
+
 
 
 

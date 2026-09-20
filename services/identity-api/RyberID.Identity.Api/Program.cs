@@ -10,6 +10,8 @@ builder.Services.AddProblemDetails();
 builder.Services.AddScoped<CreateUser>();
 builder.Services.AddScoped<BeginPasskeyRegistration>();
 builder.Services.AddScoped<CompletePasskeyRegistration>();
+builder.Services.AddScoped<BeginPasskeyAuthentication>();
+builder.Services.AddScoped<CompletePasskeyAuthentication>();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
@@ -23,5 +25,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.Run();
+
 
 
