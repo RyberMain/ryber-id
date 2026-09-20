@@ -1,11 +1,13 @@
-﻿namespace RyberID.Identity.Application.Passkeys;
+﻿using RyberID.Identity.Application.Authentication;
+
+namespace RyberID.Identity.Application.Passkeys;
 
 public sealed class CompletePasskeyAuthentication(
     IPasskeyAuthenticationStateStore stateStore,
     IPasskeyAuthenticationVerifier verifier,
     IPasskeyCredentialStore credentialStore)
 {
-    public async Task<Guid> ExecuteAsync(
+    public async Task<AuthenticatedIdentity> ExecuteAsync(
         Guid ceremonyId,
         string assertionResponseJson,
         CancellationToken cancellationToken = default)
@@ -43,6 +45,7 @@ public sealed class CompletePasskeyAuthentication(
             credential,
             cancellationToken);
 
-        return verified.UserId;
+        return new AuthenticatedIdentity(
+            verified.UserId);
     }
 }
