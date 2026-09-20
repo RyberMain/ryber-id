@@ -1,13 +1,14 @@
 ﻿using RyberID.Identity.Domain.Passkeys;
- 
+
 namespace RyberID.Identity.Application.Passkeys;
 
 public sealed class BeginPasskeyRegistration(
     IPasskeyUserHandleStore userHandleStore,
     IPasskeyCredentialStore credentialStore,
-    IPasskeyRegistrationOptionsFactory optionsFactory)
+    IPasskeyRegistrationOptionsFactory optionsFactory,
+    IPasskeyRegistrationStateStore stateStore)
 {
-    public async Task<string> ExecuteAsync(
+    public async Task<PasskeyRegistrationStart> ExecuteAsync(
         Guid userId,
         string userName,
         string displayName,
@@ -37,10 +38,27 @@ public sealed class BeginPasskeyRegistration(
                 .Select(credential => credential.CredentialId)
                 .ToArray();
 
-        return optionsFactory.Create(
-            userHandle.Value,
-            userName,
-            displayName,
-            existingCredentialIds);
+        var options =
+            optionsFactory.Create(
+                userHandle.Value,
+                userName,
+                displayName,
+                existingCredentialIds);
+
+        var ceremonyId = Guid.CreateVersion7();
+
+        var lifetime =
+            TimeSpan.FromMilliseconds(
+                (double)options.TimeoutMilliseconds);
+
+        await stateStore.SaveAsync(
+            ceremonyId,
+            options.Json,
+            lifetime,
+            cancellationToken);
+
+        return new PasskeyRegistrationStart(
+            ceremonyId,
+            options.Json);
     }
 }

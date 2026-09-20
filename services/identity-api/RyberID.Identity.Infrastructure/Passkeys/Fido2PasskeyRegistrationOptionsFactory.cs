@@ -8,7 +8,7 @@ internal sealed class Fido2PasskeyRegistrationOptionsFactory(
     IFido2 fido2)
     : IPasskeyRegistrationOptionsFactory
 {
-    public string Create(
+    public PasskeyRegistrationOptions Create(
         byte[] userHandle,
         string userName,
         string displayName,
@@ -47,6 +47,8 @@ internal sealed class Fido2PasskeyRegistrationOptionsFactory(
                         AttestationConveyancePreference.None
                 });
 
-        return options.ToJson();
+        return new PasskeyRegistrationOptions(
+            options.ToJson(),
+            options.Timeout);
     }
 }

@@ -2,7 +2,7 @@
 
 public interface IPasskeyRegistrationOptionsFactory
 {
-    string Create(
+    PasskeyRegistrationOptions Create(
         byte[] userHandle,
         string userName,
         string displayName,
