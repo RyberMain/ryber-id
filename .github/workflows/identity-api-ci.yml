@@ -1,0 +1,32 @@
+name: Identity API CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/identity-api
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore RyberID.Identity.slnx
+
+      - name: Build
+        run: dotnet build RyberID.Identity.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test RyberID.Identity.slnx --configuration Release --no-build

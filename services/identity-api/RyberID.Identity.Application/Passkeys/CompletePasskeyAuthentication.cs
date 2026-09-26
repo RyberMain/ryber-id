@@ -17,8 +17,7 @@ public sealed class CompletePasskeyAuthentication(
             await stateStore.ConsumeAsync(
                 ceremonyId,
                 cancellationToken)
-            ?? throw new InvalidOperationException(
-                "Passkey authentication ceremony was not found, has expired, or was already consumed.");
+            ?? throw new PasskeyCeremonyUnavailableException();
 
         var verified =
             await verifier.VerifyAsync(
@@ -30,8 +29,7 @@ public sealed class CompletePasskeyAuthentication(
                 verified.StoredSignCount,
                 verified.SignCount))
         {
-            throw new InvalidOperationException(
-                "Passkey signature counter did not advance.");
+            throw new PasskeyAuthenticationFailedException();
         }
 
         var signCountWasUpdated =
@@ -43,8 +41,7 @@ public sealed class CompletePasskeyAuthentication(
 
         if (!signCountWasUpdated)
         {
-            throw new InvalidOperationException(
-                "Passkey credential changed during authentication.");
+            throw new PasskeyAuthenticationFailedException();
         }
 
         return new AuthenticatedIdentity(

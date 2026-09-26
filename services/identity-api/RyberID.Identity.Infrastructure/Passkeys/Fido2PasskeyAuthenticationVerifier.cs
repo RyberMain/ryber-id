@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Fido2NetLib;
+using Fido2NetLib.Objects;
 using RyberID.Identity.Application.Passkeys;
 
 namespace RyberID.Identity.Infrastructure.Passkeys;
@@ -15,30 +16,41 @@ internal sealed class Fido2PasskeyAuthenticationVerifier(
         string assertionResponseJson,
         CancellationToken cancellationToken)
     {
-        var originalOptions =
-            AssertionOptions.FromJson(
-                optionsJson);
+        AssertionOptions originalOptions;
+        AuthenticatorAssertionRawResponse assertionResponse;
 
-        var assertionResponse =
-            JsonSerializer.Deserialize<
-                AuthenticatorAssertionRawResponse>(
-                    assertionResponseJson)
-            ?? throw new InvalidOperationException(
-                "Passkey assertion response is invalid.");
+        try
+        {
+            originalOptions =
+                AssertionOptions.FromJson(
+                    optionsJson);
+
+            assertionResponse =
+                JsonSerializer.Deserialize<
+                    AuthenticatorAssertionRawResponse>(
+                        assertionResponseJson)
+                ?? throw new PasskeyAuthenticationFailedException();
+        }
+        catch (Exception exception)
+            when (exception is JsonException or
+                FormatException or
+                Fido2VerificationException)
+        {
+            throw new PasskeyAuthenticationFailedException(
+                exception);
+        }
 
         if (assertionResponse.RawId is not { Length: > 0 } ||
             assertionResponse.Response?.UserHandle is not { Length: > 0 })
         {
-            throw new InvalidOperationException(
-                "Passkey assertion response does not identify a discoverable credential owner.");
+            throw new PasskeyAuthenticationFailedException();
         }
 
         var credential =
             await credentialStore.GetByCredentialIdAsync(
                 assertionResponse.RawId,
                 cancellationToken)
-            ?? throw new InvalidOperationException(
-                "Passkey credential is not registered.");
+            ?? throw new PasskeyAuthenticationFailedException();
 
         IsUserHandleOwnerOfCredentialIdAsync
             userHandleOwnsCredential =
@@ -56,26 +68,36 @@ internal sealed class Fido2PasskeyAuthenticationVerifier(
                             args.CredentialId);
                 };
 
-        var result =
-            await fido2.MakeAssertionAsync(
-                new MakeAssertionParams
-                {
-                    AssertionResponse =
-                        assertionResponse,
+        VerifyAssertionResult result;
 
-                    OriginalOptions =
-                        originalOptions,
+        try
+        {
+            result =
+                await fido2.MakeAssertionAsync(
+                    new MakeAssertionParams
+                    {
+                        AssertionResponse =
+                            assertionResponse,
 
-                    StoredPublicKey =
-                        credential.PublicKey,
+                        OriginalOptions =
+                            originalOptions,
 
-                    StoredSignatureCounter =
-                        credential.SignCount,
+                        StoredPublicKey =
+                            credential.PublicKey,
 
-                    IsUserHandleOwnerOfCredentialIdCallback =
-                        userHandleOwnsCredential
-                },
-                cancellationToken);
+                        StoredSignatureCounter =
+                            credential.SignCount,
+
+                        IsUserHandleOwnerOfCredentialIdCallback =
+                            userHandleOwnsCredential
+                    },
+                    cancellationToken);
+        }
+        catch (Fido2VerificationException exception)
+        {
+            throw new PasskeyAuthenticationFailedException(
+                exception);
+        }
 
         return new VerifiedPasskeyAuthentication(
             credential.UserId,

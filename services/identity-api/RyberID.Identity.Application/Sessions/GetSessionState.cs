@@ -7,21 +7,18 @@ public sealed class GetSessionState(
     TimeProvider timeProvider)
 {
     public async Task<SessionState> ExecuteAsync(
-        AuthenticatedIdentity identity,
-        Guid sessionId,
+        SessionIdentity identity,
         CancellationToken cancellationToken = default)
     {
         var session =
             await sessionStore.GetByIdAsync(
-                sessionId,
+                identity.SessionId,
                 cancellationToken)
-            ?? throw new InvalidOperationException(
-                "Session was not found.");
+            ?? throw new SessionNotFoundException();
 
         if (session.UserId != identity.UserId)
         {
-            throw new InvalidOperationException(
-                "Session does not belong to the authenticated user.");
+            throw new SessionAccessDeniedException();
         }
 
         var nowUtc =

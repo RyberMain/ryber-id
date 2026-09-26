@@ -3,4 +3,5 @@
   <Project Path="RyberID.Identity.Application/RyberID.Identity.Application.csproj" />
   <Project Path="RyberID.Identity.Domain/RyberID.Identity.Domain.csproj" />
   <Project Path="RyberID.Identity.Infrastructure/RyberID.Identity.Infrastructure.csproj" />
+  <Project Path="../../tests/RyberID.Identity.Tests/RyberID.Identity.Tests.csproj" />
 </Solution>

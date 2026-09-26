@@ -12,13 +12,11 @@ public sealed class RevokeCurrentSession(
             await sessionStore.GetByIdAsync(
                 identity.SessionId,
                 cancellationToken)
-            ?? throw new InvalidOperationException(
-                "Session was not found.");
+            ?? throw new SessionNotFoundException();
 
         if (session.UserId != identity.UserId)
         {
-            throw new InvalidOperationException(
-                "Session does not belong to the authenticated user.");
+            throw new SessionAccessDeniedException();
         }
 
         var revokedAtUtc =
